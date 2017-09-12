@@ -1,8 +1,6 @@
 dist: trusty
-sudo: false
 language: python
 python:
-- "2.6"
 - "2.7"
 addons:
   apt:
@@ -23,7 +21,20 @@ cache:
   - $HOME/.ccache
 env:
 - GAMERA_VERSION=3.4.3
+
+before_install:
+   # add for profile
+  - sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test
+  - sudo apt-get update -qq
+
+
 install:
+# add for profile
+  - sudo apt-get install -qq g++-4.8
+  - export CXX="g++-4.8"
+  - pip install nose-cprof
+  - pip install properform
+
 - export PATH="/usr/lib/ccache:$PATH"
 - pip install --upgrade pip
 - wget -c https://github.com/hsnr-gamera/gamera/releases/download/$GAMERA_VERSION/gamera-${GAMERA_VERSION}.tar.gz -O ~/.cache/gamera-${GAMERA_VERSION}.tar.gz
@@ -41,10 +52,15 @@ install:
 - pip install docutils
 - pip install pygments
 script:
-- nosetests -v
+- nosetests -v --with-cprofile --cprofile-stats-erase --cprofile-stats-file=profile_didjvu_fbbb156523_0
+  - python -m properform Push 47.88.50.110:15554 asdf_didjvu_fbbb156523_0 ./profile_didjvu_fbbb156523_0
+
+
+
 - private/run-pydiatra
 - private/run-pyflakes
 - private/check-rst
 - xmllint --nonet --noout --valid doc/*.xml
 
 # vim:ts=2 sts=2 sw=2 et
+ #2017-09-12 11:39:45 modified at 0
